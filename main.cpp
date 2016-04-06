@@ -1,4 +1,5 @@
 #include "opencv2/opencv.hpp"
+#include <sys/time.h>
 //#include "types.hpp"
 
 using namespace cv;
@@ -6,57 +7,31 @@ using namespace cv;
 int main(int, char**)
 {
     VideoCapture cap(0);
-    if(!cap.isOpened())
-        return -1;
+    if(!cap.isOpened()) return -1;
 
     Mat edges;
-    Mat red, orange, green, blue, white, yellow;
+    Mat faces[6];
     namedWindow("Scan your Magic Cube",1);
-    namedWindow("display",1);
-
-        bool flag = 1;
-        while(flag)
+    int num = 0;
+    Mat frame, face;
+    while(num < 6)
+    {
+        cap >> frame; 
+        imshow("Scan your Magic Cube", frame);
+        if (waitKey(30) == 'Y')
         {
-            Mat frame;
-            cap >> frame; 
-            imshow("Scan your Magic Cube", frame);
-            char k = waitKey(30);
-            if (k == 'Y')
-            {
-                cap >> red;
-                imshow("display", red);
-                /*switch(i)
-                {
-                    case 0:
-                        cap >> red;
-                        imshow("display", red);
-                        break;
-                    case 1:
-                        cap >> orange;
-                        imshow("display", orange);
-                        break;
-                    case 2:
-                        cap >> green;
-                        imshow("display", green);
-                        break;
-                    case 3:
-                        cap >> blue;
-                        imshow("display", blue);
-                        break;
-                    case 4:
-                        cap >> white;
-                        imshow("display", white);
-                        break;
-                    case 5:
-                        cap >> yellow;
-                        imshow("display", yellow);
-                        break;
-                }
-                */
-                flag = 0;
-            }
-        
+            cap >> face;
+            faces[num] = face;
+            num++;
+        }
     }
-
+    destroyWindow("Scan your Magic Cube");
+    namedWindow("Faces",1);
+    Mat allFace;
+    for (int i = 0; i < 6; i++)
+    {
+        allFace += faces[i];
+    }
+    imshow("Faces", allFace);
     return 0;
 }

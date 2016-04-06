@@ -1,0 +1,3 @@
+/Users/wqdong/Desktop/magiCube/CMakeFiles/edit_cache.dir
+/Users/wqdong/Desktop/magiCube/CMakeFiles/rebuild_cache.dir
+/Users/wqdong/Desktop/magiCube/CMakeFiles/magiCube.dir

@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( magiCube )
+find_package( OpenCV )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( magiCube main.cpp )
+target_link_libraries( magiCube ${OpenCV_LIBS} )

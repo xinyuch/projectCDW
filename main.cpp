@@ -10,33 +10,40 @@ int main(int, char**)
 
     Mat edges;
     Mat faces[6];
-    namedWindow("Scan your Magic Cube", WINDOW_NORMAL);
-    resizeWindow("Scan your Magic Cube",400,400);
+    namedWindow("Scan your Magic Cube", 1);
+    namedWindow("Faces", 1);
     int num = 0;
+    int k = 0;
     Mat frame, face;
     while(num < 6)
     {
         cap >> frame; 
         imshow("Scan your Magic Cube", frame);
-        int k = waitKey(30);
+        k = waitKey(30);
         if (k >= 0)
         {
             cap >> face;
             faces[num] = face;
             num++;
-            cout<<k<<"capture a fig\n";
+            cout<<num<<"capture a fig\n";
+            imshow("Faces",face);
+            //while 'y' not pressed, wait for verification 
+            while(k != 121) 
+            {
+                cap >> frame; 
+                imshow("Scan your Magic Cube", frame);
+                k = waitKey(30);
+                //not correct, discard, re-scan
+                if(k == 110)
+                {
+                    num--;
+                    break;
+                }
+            }
         }
     }
     cap.release();
     destroyWindow("Scan your Magic Cube");
     cout<<"end capture\n";
-
-    namedWindow("Faces",1);
-    for (int i = 0; i < 6; i++)
-    {
-        imshow("Faces",faces[i]);
-        waitKey(1000);
-        cout<<i<<endl;
-    }
     return 0;
 }

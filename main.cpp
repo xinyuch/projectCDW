@@ -15,8 +15,7 @@ int main(int, char**)
     int k = 0;
     Mat frame, face;
     //row 720, col 1280
-    /*
-    int grid[720][1280][3] = {0};
+    float grid[720][1280][3] = {0};
     for (int i = 120; i <= 480; i+=120)
     {
         for (int j = 240; j <= 720; j++)
@@ -35,32 +34,37 @@ int main(int, char**)
             grid[i][j][2] = 255;
         }
     }
-    */
+    
     cap>>frame;
-    Mat grid = 0*frame;
+    Mat gridMat(720, 1280, frame.type(), &grid);
+    imshow("Faces",gridMat);
+    waitKey();
+    /*
+    int t = frame.type();
     for (int i = 120; i <= 480; i+=120)
     {
         for (int j = 240; j <= 720; j++)
         {
-            grid.at<int>(i, j, 0) = 255;
-            grid.at<int>(i, j, 1) = 255;
-            grid.at<int>(i, j, 2) = 255;
+            grid.at<t>(i, j)[0] = 255;
+            grid.at<t>(i, j)[1] = 255;
+            grid.at<t>(i, j)[2] = 255;
         }
     }
     for (int i = 120; i <= 480; i++)
     {
         for (int j = 240; j <= 720; j+=160)
         {
-            grid.at<int>(i, j, 0) = 255;
-            grid.at<int>(i, j, 1) = 255;
-            grid.at<int>(i, j, 2) = 255;
+            grid.at<t>(i, j)[0] = 255;
+            grid.at<t>(i, j)[1] = 255;
+            grid.at<t>(i, j)[2] = 255;
         }
     }
-    cout<<grid.at<int>(120, 120, 2);
+    cout<<grid.at<t>(120, 120)[2];
+    */
     while(num < 6)
     {
         cap >> frame; 
-        imshow("Scan your Magic Cube", frame+grid);
+        imshow("Scan your Magic Cube", frame);
         k = waitKey(30);
         if (k >= 0)
         {
@@ -73,9 +77,9 @@ int main(int, char**)
             while(k != 121) 
             {
                 cap >> frame; 
-                imshow("Scan your Magic Cube", frame+grid);
+                imshow("Scan your Magic Cube", frame);
                 k = waitKey(30);
-                //not correct, discard, re-scan
+                //'n' pressed, not correct, discard, re-scan
                 if(k == 110)
                 {
                     num--;

@@ -42,21 +42,21 @@ int main(int, char**)
     {
         for (int j = 240; j <= 720; j++)
         {
-            grid.at<int>(i, j, 0) = 255;
-            grid.at<int>(i, j, 1) = 255;
-            grid.at<int>(i, j, 2) = 255;
+            grid.at<Vec3i>(i, j)[0] = 255;
+            grid.at<Vec3i>(i, j)[1] = 255;
+            grid.at<Vec3i>(i, j)[2] = 255;
         }
     }
     for (int i = 120; i <= 480; i++)
     {
         for (int j = 240; j <= 720; j+=160)
         {
-            grid.at<int>(i, j, 0) = 255;
-            grid.at<int>(i, j, 1) = 255;
-            grid.at<int>(i, j, 2) = 255;
+            grid.at<Vec3i>(i, j)[0] = 255;
+            grid.at<Vec3i>(i, j)[1] = 255;
+            grid.at<Vec3i>(i, j)[2] = 255;
         }
     }
-    cout<<grid.at<int>(120, 120, 2);
+    //cout<<grid.at<int>(120, 120, 2);
     while(num < 6)
     {
         cap >> frame; 

@@ -210,13 +210,5 @@ int main(int, char**)
     cap.release();
     cout<<"end capture\n";
     destroyAllWindows();
-    /*
-    string tmp;
-    cin>>tmp;
-    while(tmp != "quit")
-    {
-        cin>>tmp;
-    }
-    */
     return 0;
 }

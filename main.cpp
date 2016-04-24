@@ -13,7 +13,7 @@
 using namespace cv;
 using namespace std;
 
-enum Color {YELLOW, RED, ORANGE, BLUE, GREEN, WHITE};
+enum Color {YELLOW, GREEN, RED, ORANGE, WHITE, BLUE};
 
 static double angle( Point pt1, Point pt2, Point pt0 )
 {
@@ -85,7 +85,7 @@ static void drawsquare( Mat& image, const vector<vector<Point> >& square )
     //    cout<<square.size()<<endl;
 }
 
-//color detection helper functions
+//*********************color detection helper functions*************************//
 //h1 and s1 corresponds to testing color
 //h2 and s2 corresponds to comparison color
 double calculateDis(double h1, double s1, double h2, double s2) {
@@ -97,11 +97,11 @@ double calculateDis(double h1, double s1, double h2, double s2) {
 int findColor(double h, double s) {
     double colors[6];
     colors[YELLOW] = calculateDis(h, s, 60, 1.0);
+    colors[GREEN] = calculateDis(h, s, 120, 1.0);
     colors[RED] = calculateDis(h, s, 0, 1.0);
     colors[ORANGE] = calculateDis(h, s, 30, 1.0);
-    colors[BLUE] = calculateDis(h, s, 240, 1.0);
-    colors[GREEN] = calculateDis(h, s, 120, 1.0);
     colors[WHITE] = calculateDis(h, s, 0, 0.0);
+    colors[BLUE] = calculateDis(h, s, 240, 1.0);
     double min_dis = colors[0];
     int color_index = 0;
     for (int i = 1; i < 6; ++i) {
@@ -148,16 +148,16 @@ vector<int> printFaceColor(string filename, vector<Point> squares) {
     //    imshow("win1", img);
     //    waitKey();
     
-    //	vector<Square> squares;
-    //	squares.push_back(Square(790, 211)); //brown (h should equal to 26)
-    //	squares.push_back(Square(787, 284)); //pink...ish
-    //	squares.push_back(Square(782, 357)); //green
-    //	squares.push_back(Square(719, 213)); //brown-red (h = 28)
-    //	squares.push_back(Square(717, 284)); //orange - yellow (h = 30)
-    //	squares.push_back(Square(714, 354)); //red-orange (h = 20)
-    //	squares.push_back(Square(649, 215)); //yellow (h = 48)
-    //	squares.push_back(Square(647, 283)); //yellow (h = 58)
-    //	squares.push_back(Square(645, 351)); // brown - red
+    //  vector<Square> squares;
+    //  squares.push_back(Square(790, 211)); //brown (h should equal to 26)
+    //  squares.push_back(Square(787, 284)); //pink...ish
+    //  squares.push_back(Square(782, 357)); //green
+    //  squares.push_back(Square(719, 213)); //brown-red (h = 28)
+    //  squares.push_back(Square(717, 284)); //orange - yellow (h = 30)
+    //  squares.push_back(Square(714, 354)); //red-orange (h = 20)
+    //  squares.push_back(Square(649, 215)); //yellow (h = 48)
+    //  squares.push_back(Square(647, 283)); //yellow (h = 58)
+    //  squares.push_back(Square(645, 351)); // brown - red
     
     //test for bgr value
     for (int i = 0; i < squares.size(); ++i) {
@@ -168,7 +168,7 @@ vector<int> printFaceColor(string filename, vector<Point> squares) {
     }
     vector<int> face_color = ColorDetect(img, squares);
     //the order of cube color is vertical, but cube solver algorithm needs horizontal input
-    vector<int> face_color_ordered = face_color;
+    vector<int> face_color_ordered(9, 0);
     face_color_ordered[0] = face_color[6];
     face_color_ordered[1] = face_color[3];
     face_color_ordered[2] = face_color[0];
@@ -185,19 +185,19 @@ vector<int> printFaceColor(string filename, vector<Point> squares) {
                 cout << "YELLOW" << endl;
                 break;
             case 1:
-                cout << "RED" << endl;
-                break;
-            case 2:
-                cout << "ORANGE" << endl;
-                break;
-            case 3:
-                cout << "BLUE" << endl;
-                break;
-            case 4:
                 cout << "GREEN" << endl;
                 break;
-            case 5:
+            case 2:
+                cout << "RED" << endl;
+                break;
+            case 3:
+                cout << "ORANGE" << endl;
+                break;
+            case 4:
                 cout << "WHITE" << endl;
+                break;
+            case 5:
+                cout << "BLUE" << endl;
                 break;
         }
     }
@@ -206,7 +206,7 @@ vector<int> printFaceColor(string filename, vector<Point> squares) {
 
 
 
-int main(int, char**)
+int main()
 {
     
     VideoCapture cap(0);
@@ -221,7 +221,7 @@ int main(int, char**)
     
     //color of cells 6*9
     vector<vector<int>> cell_colors(6, vector<int>(9, 0));
-    
+ 
     while(num < 6)
     {
         cap >> frame;

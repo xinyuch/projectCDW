@@ -216,3 +216,98 @@ int main(int, char**)
     destroyAllWindows();
     return 0;
 }
+
+string color(int value)
+{
+    string output;
+    switch (value) {
+        case 0:
+            output = "D";
+            break;
+        case 1:
+            output = "B";
+            break;
+        case 2:
+            output = "L";
+            break;
+        case 3:
+            output = "R";
+            break;
+        case 4:
+            output = "U";
+            break;
+        case 5:
+            output = "F";
+            break;
+    }
+    return output;
+}
+
+vector<string> startState(vector<vector<int>> &colors)
+{
+    vector<string> output;
+    vector<int> values;
+    values.push_back(colors[0][7]);
+    values.push_back(colors[2][1]);
+    values.push_back(colors[0][5]);
+    values.push_back(colors[1][2]);
+    values.push_back(colors[0][1]);
+    values.push_back(colors[3][1]);
+    values.push_back(colors[0][3]);
+    values.push_back(colors[5][1]);
+    values.push_back(colors[4][1]);
+    values.push_back(colors[2][7]);
+    values.push_back(colors[4][5]);
+    values.push_back(colors[1][7]);
+    values.push_back(colors[4][7]);
+    values.push_back(colors[3][7]);
+    values.push_back(colors[4][3]);
+    values.push_back(colors[5][7]);
+    values.push_back(colors[2][5]);
+    values.push_back(colors[1][3]);
+    values.push_back(colors[2][3]);
+    
+    //start from 19
+    values.push_back(colors[5][5]);
+    values.push_back(colors[3][3]);
+    values.push_back(colors[1][5]);
+    values.push_back(colors[3][5]);
+    values.push_back(colors[5][3]);
+    values.push_back(colors[0][8]);
+    
+    values.push_back(colors[2][2]);
+    values.push_back(colors[1][0]);
+    values.push_back(colors[0][2]);
+    values.push_back(colors[1][2]);
+    values.push_back(colors[3][0]);
+    values.push_back(colors[0][0]);
+    values.push_back(colors[3][2]);
+    values.push_back(colors[5][0]);
+    values.push_back(colors[0][6]);
+    values.push_back(colors[5][2]);
+    values.push_back(colors[2][0]);
+    values.push_back(colors[4][2]);
+    values.push_back(colors[1][6]);
+    values.push_back(colors[2][8]);
+    values.push_back(colors[4][0]);
+    values.push_back(colors[2][6]);
+    values.push_back(colors[5][8]);
+    values.push_back(colors[4][6]);
+    values.push_back(colors[5][6]);
+    values.push_back(colors[3][8]);
+    values.push_back(colors[4][8]);
+    values.push_back(colors[3][6]);
+    values.push_back(colors[1][8]);
+    for (int  i = 0; i < 23; i=i+2) {
+        string temp = color(values[i]) + color(values[i+1]);
+        output.push_back(temp);
+    }
+    for (int  i = 24; i < 47; i=i+3) {
+        string temp =  color(values[i]) + color(values[i+1]) + color(values[i+2]);
+        output.push_back(temp);
+    }
+    return output;
+}
+
+
+

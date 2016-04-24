@@ -143,12 +143,14 @@ int main(int, char**)
         threshold( frame, dst, threshold_value, max_BINARY_value, threshold_type );
         findsquare(dst, square);
         
+        vector<Point> cells;
+        
         if (square.size()) {
             Point a = square[0][0];
             Point b = square[0][1];
             Point c = square[0][2];
             Point d = square[0][3];
-            vector<Point> cells;
+            
             cells.push_back(Point(b.x/6+5*d.x/6, b.y/6+5*d.y/6));
             cells.push_back(Point((a.x+b.x)/12+5*(c.x+d.x)/12, (a.y+b.y)/12+5*(c.y+d.y)/12));
             cells.push_back(Point(a.x/6+5*c.x/6, a.y/6+5*c.y/6));
@@ -199,6 +201,9 @@ int main(int, char**)
                             break;
                     }
                     cout<<num<<" store the fig\n";
+                    for (int i = 0; i < cells.size(); ++i) {
+                        cout << i << " x = " << cells[i].x << " y = " << cells[i].y << endl;
+                    }
                     break;
                 }
                 //not correct, discard, re-scan

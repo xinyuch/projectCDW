@@ -1,313 +1,575 @@
-#include "opencv2/opencv.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgproc/imgproc.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui/highgui.hpp"
+// Include standard headers
+#include <stdio.h>
+#include <stdlib.h>
+
+#include <OpenGL/gl.h>
+#include <OpenGl/glu.h>
+#include <GLUT/glut.h>
+
+
+#include <cstdlib>
 
 #include <iostream>
-#include <math.h>
-#include <string.h>
 
-using namespace cv;
+#include <fstream>
+
+#include <cmath>
+
+#include "imageloader.h"
 using namespace std;
 
-static double angle( Point pt1, Point pt2, Point pt0 )
-{
-    double dx1 = pt1.x - pt0.x;
-    double dy1 = pt1.y - pt0.y;
-    double dx2 = pt2.x - pt0.x;
-    double dy2 = pt2.y - pt0.y;
-    return (dx1*dx2 + dy1*dy2)/sqrt((dx1*dx1 + dy1*dy1)*(dx2*dx2 + dy2*dy2) + 1e-10);
+float _angle = 0;
+
+float i;
+
+int k=0;
+
+const float BOX_SIZE = 2.0f;
+
+GLuint white_textureId;
+
+GLuint red_textureId;
+
+GLuint blue_textureId;
+
+GLuint green_textureId;
+
+GLuint yellow_textureId;
+
+GLuint orange_textureId;
+
+GLuint _displayListId_smallcube; //The OpenGL id of the display list
+
+//Makes the image into a texture, and returns the id of the texture
+
+GLuint loadTexture(Image* image) {
+    
+    GLuint textureId;
+    
+    glGenTextures(1, &textureId);
+    
+    glBindTexture(GL_TEXTURE_2D, textureId);
+    
+    glTexImage2D(GL_TEXTURE_2D,
+                 
+                 0,
+                 
+                 GL_RGB,
+                 
+                 image->width, image->height,
+                 
+                 0,
+                 
+                 GL_RGB,
+                 
+                 GL_UNSIGNED_BYTE,
+                 
+                 image->pixels);
+    
+    return textureId;
+    
 }
 
-static void findsquare( const Mat& image, vector<vector<Point> >& square )
+void handleKeypress(unsigned char key,int x,int y)
+
 {
-    int thresh = 50;
-    square.clear();
     
-    Mat pyr, timg, gray;
-    Mat gray0(image.size(), CV_8U);
+    switch(key)
     
-    vector<vector<Point> > contours;
-    
-    for( int c = 0; c < 3; c++ )
     {
-        int ch[] = {c, 0};
-        mixChannels(&image, 1, &gray0, 1, ch, 1);
+            
+        case 27:
+            
+            exit(0);
+            
+    }
+    
+}
+
+
+
+void handleResize(int w,int h)
+
+{
+    
+    glViewport(0,0,w,h);
+    
+    glMatrixMode(GL_PROJECTION);
+    
+    glLoadIdentity();
+    
+    gluPerspective(45.0,(double)w/(double)h,1.0,200);
+    
+    gluLookAt(0.0f,5.5f, 15.0f,
+              
+              0.0f,0.0f,0.0f,
+              
+              0.0f,1.0f,0.0f);
+    
+}
+
+
+
+void draw_smallcube()
+
+{
+    
+    
+    
+    Image* image = loadBMP("white.bmp");
+    
+    white_textureId = loadTexture(image);
+    
+    delete image;
+    
+    
+    
+    Image* image1 = loadBMP("red.bmp");
+    
+    red_textureId = loadTexture(image1);
+    
+    delete image1;
+    
+    
+    
+    Image* image2 = loadBMP("blue.bmp");
+    
+    blue_textureId = loadTexture(image2);
+    
+    delete image2;
+    
+    
+    
+    Image* image3 = loadBMP("orange.bmp");
+    
+    orange_textureId = loadTexture(image3);
+    
+    delete image3;
+    
+    
+    
+    Image* image4 = loadBMP("green.bmp");
+    
+    green_textureId = loadTexture(image4);
+    
+    delete image4;
+    
+    
+    
+    Image* image5 = loadBMP("yellow.bmp");
+    
+    yellow_textureId = loadTexture(image5);
+    
+    delete image5;
+    
+    
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, orange_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    
+    
+    //Top face
+    
+    //glNormal3f(0.0, 1.0f, 0.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    glDisable(GL_TEXTURE_2D);
+    
+    
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, red_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    //Bottom face
+    
+    
+    
+    //glNormal3f(0.0, -1.0f, 0.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, green_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    
+    
+    //Left face
+    
+    //glNormal3f(-1.0, 0.0f, 0.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, blue_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    
+    
+    //Right face
+    
+    //glNormal3f(1.0, 0.0f, 0.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, white_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    
+    
+    //Front face
+    
+    //glNormal3f(0.0, 0.0f, 1.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    
+    
+    
+    
+    glEnable(GL_TEXTURE_2D);
+    
+    glBindTexture(GL_TEXTURE_2D, yellow_textureId);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    
+    
+    
+    glBegin(GL_QUADS);
+    
+    //Back face
+    
+    //glNormal3f(0.0, 0.0f, -1.0f);
+    
+    glTexCoord2f(0.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 0.0f);
+    
+    glVertex3f(-BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(1.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    glTexCoord2f(0.0f, 1.0f);
+    
+    glVertex3f(BOX_SIZE / 2, -BOX_SIZE / 2, -BOX_SIZE / 2);
+    
+    
+    
+    glEnd();
+    
+    //glDisable(GL_TEXTURE_2D);
+    
+    
+    
+    //glutSwapBuffers();
+    
+}
+
+
+
+
+
+void initRendering()
+
+{
+    
+    glEnable(GL_DEPTH_TEST);
+    
+    glEnable(GL_COLOR_MATERIAL);
+    
+    //glEnable(GL_NORMALIZE);
+    
+    //glEnable(GL_COLOR_MATERIAL);
+    
+    glClearColor(0.0f,0.0f,0.2f,1.0f);
+    
+    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    //Set up a display list for drawing a cube
+    
+    _displayListId_smallcube = glGenLists(1); //Make room for the display list
+    
+    glNewList(_displayListId_smallcube, GL_COMPILE); //Begin the display list
+    
+    draw_smallcube(); //Add commands for drawing a black area to the display list
+    
+    glEndList(); //End the display list
+    
+    
+    
+    
+    
+}
+
+void drawScene()
+
+{
+    
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    
+    glMatrixMode(GL_MODELVIEW);
+    
+    glLoadIdentity();
+    
+    glTranslatef(0,-5,-10);
+    
+    glRotatef(-_angle, 2.0f, 2.0f, 0.0f);
+    
+    
+    
+    for(int i=0;i<5;i+=2)
         
-        Canny(gray0, gray, 0, thresh, 5);
-        dilate(gray, gray, Mat(), Point(-1,-1));
+    {
         
-        findContours(gray, contours, RETR_LIST, CHAIN_APPROX_SIMPLE);
-        
-        vector<Point> approx;
-        
-        for( size_t i = 0; i < contours.size(); i++ )
+        for(int j=0;j<5;j+=2)
+            
         {
-            approxPolyDP(Mat(contours[i]), approx, arcLength(Mat(contours[i]), true)*0.02, true);
-            if( approx.size() == 4 &&
-               fabs(contourArea(Mat(approx))) > 20000 &&
-               isContourConvex(Mat(approx)) )
-            {
-                double maxCosine = 0;
+            
+            for(int k=0;k<5;k+=2)
                 
-                for( int j = 2; j < 5; j++ )
-                {
-                    double cosine = fabs(angle(approx[j%4], approx[j-2], approx[j-1]));
-                    maxCosine = MAX(maxCosine, cosine);
-                }
-                if( maxCosine < 0.3 )
-                {
-                    square.push_back(approx);
-                }
-            }
-        }
-    }
-    if (square.size() != 1) {
-        square.clear();
-    }
-}
-
-static void drawsquare( Mat& image, const vector<vector<Point> >& square )
-{
-    const char* wndname = "Cell Recognition";
-    for( size_t i = 0; i < square.size(); i++ )
-    {
-        const Point* p = &square[i][0];
-        int n = (int)square[i].size();
-        polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
-    }
-    imshow(wndname, image);
-//    cout<<square.size()<<endl;
-}
-
-int main(int, char**)
-{
-    
-    VideoCapture cap(0);
-    if(!cap.isOpened()) return -1;
-    
-    Mat faces[6], frame, face;
-    vector<vector<Point> > square;
-    Mat blank, src_gray, dst, canny_output;
-    
-    int num = 0;
-    int k = 0;
-    /*
-     cap>>frame;
-     Mat grid = 0*frame;
-     for (int i = 120; i <= 560; i+=140)
-     {
-     for (int j = 500; j <= 620; j++)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=4)
-     {
-     for (int j = 500; j <= 620; j+=40)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=140)
-     {
-     for (int j = 340; j <= 460; j++)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=4)
-     {
-     for (int j = 340; j <= 460; j+=40)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     */
-    while(num < 6)
-    {
-        cap >> frame;
-        int threshold_value = 215;
-        int threshold_type = 3;
-        int const max_BINARY_value = 255;
-        mean(frame);
-        threshold( frame, dst, threshold_value, max_BINARY_value, threshold_type );
-        findsquare(dst, square);
-        
-        if (square.size()) {
-            Point a = square[0][0];
-            Point b = square[0][1];
-            Point c = square[0][2];
-            Point d = square[0][3];
-            vector<Point> cells;
-            cells.push_back(Point(b.x/6+5*d.x/6, b.y/6+5*d.y/6));
-            cells.push_back(Point((a.x+b.x)/12+5*(c.x+d.x)/12, (a.y+b.y)/12+5*(c.y+d.y)/12));
-            cells.push_back(Point(a.x/6+5*c.x/6, a.y/6+5*c.y/6));
-            cells.push_back(Point((b.x+c.x)/12+5*(a.x+d.x)/12, (b.y+c.y)/12+5*(a.y+d.y)/12));
-            cells.push_back(Point((a.x+b.x+c.x+d.x)/4, (a.y+b.y+c.y+d.y)/4));
-            cells.push_back(Point(5*(b.x+c.x)/12+(a.x+d.x)/12, 5*(b.y+c.y)/12+(a.y+d.y)/12));
-            cells.push_back(Point(5*a.x/6+c.x/6, 5*a.y/6+c.y/6));
-            cells.push_back(Point(5*(a.x+b.x)/12+(c.x+d.x)/12, 5*(a.y+b.y)/12+(c.y+d.y)/12));
-            cells.push_back(Point(5*b.x/6+d.x/6, 5*b.y/6+d.y/6));
-            for (int i = 0; i < 9; i++) {
-                circle(frame, cells[i], 10, Scalar(0,255,0));
-            }
-        }
-        drawsquare(frame, square);
-        
-        k = waitKey(30);
-        if (k == 'c')
-        {
-            faces[num] = frame;
-            num++;
-            cout<<num<<" capture a fig\n";
-            //while 'y' not pressed, wait for verification
-            while(k != 'y' && k != 'n')
             {
-                k = waitKey(30);
-                //correct, store, scan the next face
-                if(k == 'y')
-                {
-                    switch(num)
-                    {
-                        case 1:
-                            cout<<imwrite("img1.png",frame)<<endl;
-                            break;
-                        case 2:
-                            cout<<imwrite("img2.png",frame)<<endl;
-                            break;
-                        case 3:
-                            cout<<imwrite("img3.png",frame)<<endl;
-                            break;
-                        case 4:
-                            cout<<imwrite("img4.png",frame)<<endl;
-                            break;
-                        case 5:
-                            cout<<imwrite("img5.png",frame)<<endl;
-                            break;
-                        case 6:
-                            cout<<imwrite("img6.png",frame)<<endl;
-                            break;
-                    }
-                    cout<<num<<" store the fig\n";
-                    break;
-                }
-                //not correct, discard, re-scan
-                if(k == 'n')
-                {
-                    cout<<"discard the fig\n";
-                    num--;
-                    break;
-                }
+                
+                glPushMatrix();
+                
+                glTranslatef(i,j,k);
+                
+                glCallList(_displayListId_smallcube);
+                
+                glPopMatrix();
+                
             }
+            
         }
+        
     }
-    cap.release();
-    cout<<"end capture\n";
-    destroyAllWindows();
+    
+    
+    
+    glutSwapBuffers();
+    
+    
+    
+    
+    
+    
+    
+}
+
+void update(int value) {
+    
+    _angle += 2.0f;
+    
+    if (_angle > 360) {
+        
+        _angle -= 360;
+        
+    }
+    
+    glutPostRedisplay();
+    
+    glutTimerFunc(10, update, 0);
+    
+}
+
+int main(int argc,char** argv)
+
+{
+    
+    glutInit(&argc,argv);
+    
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH);
+    
+    glutInitWindowSize(800,800);
+    
+    
+    
+    glutCreateWindow("basic shape");
+    
+    initRendering();
+    
+    glutFullScreen();
+    
+    
+    
+    glutDisplayFunc(drawScene);
+    
+    glutKeyboardFunc(handleKeypress);
+    
+    glutReshapeFunc(handleResize);
+    
+    glutTimerFunc(25, update, 0);
+    
+    
+    
+    glutMainLoop();
+    
+    
+    
     return 0;
-}
-
-string color(int value)
-{
-    string output;
-    switch (value) {
-        case 0:
-            output = "D";
-            break;
-        case 1:
-            output = "B";
-            break;
-        case 2:
-            output = "L";
-            break;
-        case 3:
-            output = "R";
-            break;
-        case 4:
-            output = "U";
-            break;
-        case 5:
-            output = "F";
-            break;
-    }
-    return output;
-}
-
-vector<string> startState(vector<vector<int>> &colors)
-{
-    vector<string> output;
-    vector<int> values;
-    values.push_back(colors[0][7]);
-    values.push_back(colors[2][1]);
-    values.push_back(colors[0][5]);
-    values.push_back(colors[1][2]);
-    values.push_back(colors[0][1]);
-    values.push_back(colors[3][1]);
-    values.push_back(colors[0][3]);
-    values.push_back(colors[5][1]);
-    values.push_back(colors[4][1]);
-    values.push_back(colors[2][7]);
-    values.push_back(colors[4][5]);
-    values.push_back(colors[1][7]);
-    values.push_back(colors[4][7]);
-    values.push_back(colors[3][7]);
-    values.push_back(colors[4][3]);
-    values.push_back(colors[5][7]);
-    values.push_back(colors[2][5]);
-    values.push_back(colors[1][3]);
-    values.push_back(colors[2][3]);
     
-    //start from 19
-    values.push_back(colors[5][5]);
-    values.push_back(colors[3][3]);
-    values.push_back(colors[1][5]);
-    values.push_back(colors[3][5]);
-    values.push_back(colors[5][3]);
-    values.push_back(colors[0][8]);
     
-    values.push_back(colors[2][2]);
-    values.push_back(colors[1][0]);
-    values.push_back(colors[0][2]);
-    values.push_back(colors[1][2]);
-    values.push_back(colors[3][0]);
-    values.push_back(colors[0][0]);
-    values.push_back(colors[3][2]);
-    values.push_back(colors[5][0]);
-    values.push_back(colors[0][6]);
-    values.push_back(colors[5][2]);
-    values.push_back(colors[2][0]);
-    values.push_back(colors[4][2]);
-    values.push_back(colors[1][6]);
-    values.push_back(colors[2][8]);
-    values.push_back(colors[4][0]);
-    values.push_back(colors[2][6]);
-    values.push_back(colors[5][8]);
-    values.push_back(colors[4][6]);
-    values.push_back(colors[5][6]);
-    values.push_back(colors[3][8]);
-    values.push_back(colors[4][8]);
-    values.push_back(colors[3][6]);
-    values.push_back(colors[1][8]);
-    for (int  i = 0; i < 23; i=i+2) {
-        string temp = color(values[i]) + color(values[i+1]);
-        output.push_back(temp);
-    }
-    for (int  i = 24; i < 47; i=i+3) {
-        string temp =  color(values[i]) + color(values[i+1]) + color(values[i+2]);
-        output.push_back(temp);
-    }
-    return output;
+    
 }
-
-
-

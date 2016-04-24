@@ -135,15 +135,15 @@ vector<int> ColorDetect(Mat img, vector<Point> squares) {
     return face_color;
 }
 
-vector<int> printFaceColor(string filename, vector<Point> squares) {
-    Mat img = imread(filename, CV_LOAD_IMAGE_COLOR);
+vector<int> printFaceColor(Mat img, vector<Point> squares) {
+    //Mat img = imread(filename, CV_LOAD_IMAGE_COLOR);
     // cout << img.type() << endl;
-    cout << img.cols << endl;
-    cout << img.rows << endl;
-    if(!img.data) {
-        cout << "image not loaded!" << endl;
-        exit(1);
-    }
+    //cout << img.cols << endl;
+    //cout << img.rows << endl;
+//    if(!img.data) {
+//        cout << "image not loaded!" << endl;
+//        exit(1);
+//    }
     //    namedWindow("win1");
     //    imshow("win1", img);
     //    waitKey();
@@ -168,40 +168,40 @@ vector<int> printFaceColor(string filename, vector<Point> squares) {
     }
     vector<int> face_color = ColorDetect(img, squares);
     //the order of cube color is vertical, but cube solver algorithm needs horizontal input
-    vector<int> face_color_ordered(9, 0);
-    face_color_ordered[0] = face_color[6];
-    face_color_ordered[1] = face_color[3];
-    face_color_ordered[2] = face_color[0];
-    face_color_ordered[3] = face_color[7];
-    face_color_ordered[4] = face_color[4];
-    face_color_ordered[5] = face_color[1];
-    face_color_ordered[6] = face_color[8];
-    face_color_ordered[7] = face_color[5];
-    face_color_ordered[8] = face_color[2];
+//    vector<int> face_color_ordered(9, 0);
+//    face_color_ordered[0] = face_color[6];
+//    face_color_ordered[1] = face_color[3];
+//    face_color_ordered[2] = face_color[0];
+//    face_color_ordered[3] = face_color[7];
+//    face_color_ordered[4] = face_color[4];
+//    face_color_ordered[5] = face_color[1];
+//    face_color_ordered[6] = face_color[8];
+//    face_color_ordered[7] = face_color[5];
+//    face_color_ordered[8] = face_color[2];
     
-    for(int i = 0; i < 9; ++i) {
-        switch(face_color_ordered[i]) {
-            case 0:
-                cout << "YELLOW" << endl;
-                break;
-            case 1:
-                cout << "GREEN" << endl;
-                break;
-            case 2:
-                cout << "RED" << endl;
-                break;
-            case 3:
-                cout << "ORANGE" << endl;
-                break;
-            case 4:
-                cout << "WHITE" << endl;
-                break;
-            case 5:
-                cout << "BLUE" << endl;
-                break;
-        }
-    }
-    return face_color_ordered;
+//    for(int i = 0; i < 9; ++i) {
+//        switch(face_color[i]) {
+//            case 0:
+//                cout << "YELLOW" << endl;
+//                break;
+//            case 1:
+//                cout << "GREEN" << endl;
+//                break;
+//            case 2:
+//                cout << "RED" << endl;
+//                break;
+//            case 3:
+//                cout << "ORANGE" << endl;
+//                break;
+//            case 4:
+//                cout << "WHITE" << endl;
+//                break;
+//            case 5:
+//                cout << "BLUE" << endl;
+//                break;
+//        }
+//    }
+    return face_color;
 }
 
 
@@ -261,6 +261,31 @@ int main()
             faces[num] = frame;
             num++;
             cout<<num<<" capture a fig\n";
+            //color detection starts here
+            vector<int> temp = printFaceColor(frame, cells);
+            for (int i = 0; i < 9; i++) {
+                switch(temp[i]) {
+                    case YELLOW:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(0,255,255), CV_FILLED);
+                        break;
+                    case GREEN:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(0,255,0), CV_FILLED);
+                        break;
+                    case RED:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(0,0,255), CV_FILLED);
+                        break;
+                    case ORANGE:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(20,100,240), CV_FILLED);
+                        break;
+                    case WHITE:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(255,255,255), CV_FILLED);
+                        break;
+                    case BLUE:
+                        circle(frame, cells[i] - Point(200, 0), 10, Scalar(255,0,0), CV_FILLED);
+                        break;
+                }
+            }
+            imshow("Cell Recognition", frame);
             //while 'y' not pressed, wait for verification
             while(k != 'y' && k != 'n')
             {
@@ -274,10 +299,37 @@ int main()
                     for (int i = 0; i < cells.size(); ++i) {
                         cout << i << " x = " << cells[i].x << " y = " << cells[i].y << endl;
                     }
-                    //color detection starts here
-                    vector<int> temp = printFaceColor(filename, cells);
+                    
                     //temp[4] is the color of central
-                    cell_colors[temp[4]] = temp;
+                    vector<int> temp_ordered(9, 0);
+                    int j = 8;
+                    for (int i = 0; i < temp_ordered.size(); ++i) {
+                        temp_ordered[i] = temp[j--];
+                    }
+                    for(int i = 0; i < 9; ++i) {
+                        switch(temp_ordered[i]) {
+                            case 0:
+                                cout << "YELLOW" << endl;
+                                break;
+                            case 1:
+                                cout << "GREEN" << endl;
+                                break;
+                            case 2:
+                                cout << "RED" << endl;
+                                break;
+                            case 3:
+                                cout << "ORANGE" << endl;
+                                break;
+                            case 4:
+                                cout << "WHITE" << endl;
+                                break;
+                            case 5:
+                                cout << "BLUE" << endl;
+                                break;
+                        }
+                    }
+
+                    cell_colors[temp[4]] = temp_ordered;
                     break;
                 }
                 //not correct, discard, re-scan

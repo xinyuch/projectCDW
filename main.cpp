@@ -6,10 +6,14 @@
 
 #include <iostream>
 #include <math.h>
-#include <string.h>
+#include <string>
+#include <vector>
+#include <algorithm>
 
 using namespace cv;
 using namespace std;
+
+enum Color {YELLOW, RED, ORANGE, BLUE, GREEN, WHITE};
 
 static double angle( Point pt1, Point pt2, Point pt0 )
 {
@@ -78,8 +82,129 @@ static void drawsquare( Mat& image, const vector<vector<Point> >& square )
         polylines(image, &p, &n, 1, true, Scalar(0,255,0), 3, LINE_AA);
     }
     imshow(wndname, image);
-//    cout<<square.size()<<endl;
+    //    cout<<square.size()<<endl;
 }
+
+//color detection helper functions
+//h1 and s1 corresponds to testing color
+//h2 and s2 corresponds to comparison color
+double calculateDis(double h1, double s1, double h2, double s2) {
+    double dh = min(abs(h1 - h2), 360 - abs(h1 - h2)) / 180.0;
+    double ds = abs(s1 - s2);
+    return sqrt(dh * dh + ds * ds);
+}
+//calculate 6 distance and find the smallest one to be the color
+int findColor(double h, double s) {
+    double colors[6];
+    colors[YELLOW] = calculateDis(h, s, 60, 1.0);
+    colors[RED] = calculateDis(h, s, 0, 1.0);
+    colors[ORANGE] = calculateDis(h, s, 30, 1.0);
+    colors[BLUE] = calculateDis(h, s, 240, 1.0);
+    colors[GREEN] = calculateDis(h, s, 120, 1.0);
+    colors[WHITE] = calculateDis(h, s, 0, 0.0);
+    double min_dis = colors[0];
+    int color_index = 0;
+    for (int i = 1; i < 6; ++i) {
+        if (min_dis > colors[i]) {
+            min_dis = colors[i];
+            color_index = i;
+        }
+    }
+    return color_index;
+}
+
+//the first parameter is an image in RGB
+//squares is a vector of size 9 which represents the center of
+//each small square of a certain face
+vector<int> ColorDetect(Mat img, vector<Point> squares) {
+    vector<int> face_color(9, 0);
+    Mat imgHSV;
+    //img *= 1./255;
+    cvtColor(img, imgHSV, CV_BGR2HSV);
+    for (int i = 0; i < squares.size(); ++i) {
+        Vec3b hsv = imgHSV.at<Vec3b>(squares[i].y, squares[i].x);
+        int h = hsv.val[0] * 2;
+        double s = hsv.val[1] / 255.0;
+        double v = hsv.val[2] / 255.0;
+        //int h = imgHSV.at<Vec3b>(squares[i].y, squares[i].x).val[0];
+        //int s = imgHSV.at<Vec3b>(squares[i].y, squares[i].x).val[1];
+        //int v = imgHSV.at<Vec3b>(squares[i].y, squares[i].x).val[2];
+        cout << "the color of face " << i << " is h = " << h << " s = " << s << " v = " << v << endl;
+        face_color[i] = findColor(h, s);
+    }
+    return face_color;
+}
+
+vector<int> printFaceColor(string filename, vector<Point> squares) {
+    Mat img = imread(filename, CV_LOAD_IMAGE_COLOR);
+    // cout << img.type() << endl;
+    cout << img.cols << endl;
+    cout << img.rows << endl;
+    if(!img.data) {
+        cout << "image not loaded!" << endl;
+        exit(1);
+    }
+    //    namedWindow("win1");
+    //    imshow("win1", img);
+    //    waitKey();
+    
+    //	vector<Square> squares;
+    //	squares.push_back(Square(790, 211)); //brown (h should equal to 26)
+    //	squares.push_back(Square(787, 284)); //pink...ish
+    //	squares.push_back(Square(782, 357)); //green
+    //	squares.push_back(Square(719, 213)); //brown-red (h = 28)
+    //	squares.push_back(Square(717, 284)); //orange - yellow (h = 30)
+    //	squares.push_back(Square(714, 354)); //red-orange (h = 20)
+    //	squares.push_back(Square(649, 215)); //yellow (h = 48)
+    //	squares.push_back(Square(647, 283)); //yellow (h = 58)
+    //	squares.push_back(Square(645, 351)); // brown - red
+    
+    //test for bgr value
+    for (int i = 0; i < squares.size(); ++i) {
+        int b = img.at<Vec3b>(squares[i].y, squares[i].x)[0];
+        int g = img.at<Vec3b>(squares[i].y, squares[i].x)[1];
+        int r = img.at<Vec3b>(squares[i].y, squares[i].x)[2];
+        cout << "TEST: " << i << " B = " << b << " G = " << g << " R = " << r << endl;
+    }
+    vector<int> face_color = ColorDetect(img, squares);
+    //the order of cube color is vertical, but cube solver algorithm needs horizontal input
+    vector<int> face_color_ordered = face_color;
+    face_color_ordered[0] = face_color[6];
+    face_color_ordered[1] = face_color[3];
+    face_color_ordered[2] = face_color[0];
+    face_color_ordered[3] = face_color[7];
+    face_color_ordered[4] = face_color[4];
+    face_color_ordered[5] = face_color[1];
+    face_color_ordered[6] = face_color[8];
+    face_color_ordered[7] = face_color[5];
+    face_color_ordered[8] = face_color[2];
+    
+    for(int i = 0; i < 9; ++i) {
+        switch(face_color_ordered[i]) {
+            case 0:
+                cout << "YELLOW" << endl;
+                break;
+            case 1:
+                cout << "RED" << endl;
+                break;
+            case 2:
+                cout << "ORANGE" << endl;
+                break;
+            case 3:
+                cout << "BLUE" << endl;
+                break;
+            case 4:
+                cout << "GREEN" << endl;
+                break;
+            case 5:
+                cout << "WHITE" << endl;
+                break;
+        }
+    }
+    return face_color_ordered;
+}
+
+
 
 int main(int, char**)
 {
@@ -93,46 +218,10 @@ int main(int, char**)
     
     int num = 0;
     int k = 0;
-    /*
-     cap>>frame;
-     Mat grid = 0*frame;
-     for (int i = 120; i <= 560; i+=140)
-     {
-     for (int j = 500; j <= 620; j++)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=4)
-     {
-     for (int j = 500; j <= 620; j+=40)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=140)
-     {
-     for (int j = 340; j <= 460; j++)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     for (int i = 120; i <= 560; i+=4)
-     {
-     for (int j = 340; j <= 460; j+=40)
-     {
-     grid.at<Vec3i>(i, j)[0] = 255;
-     grid.at<Vec3i>(i, j)[1] = 255;
-     grid.at<Vec3i>(i, j)[2] = 255;
-     }
-     }
-     */
+    
+    //color of cells 6*9
+    vector<vector<int>> cell_colors(6, vector<int>(9, 0));
+    
     while(num < 6)
     {
         cap >> frame;
@@ -179,31 +268,16 @@ int main(int, char**)
                 //correct, store, scan the next face
                 if(k == 'y')
                 {
-                    switch(num)
-                    {
-                        case 1:
-                            cout<<imwrite("img1.png",frame)<<endl;
-                            break;
-                        case 2:
-                            cout<<imwrite("img2.png",frame)<<endl;
-                            break;
-                        case 3:
-                            cout<<imwrite("img3.png",frame)<<endl;
-                            break;
-                        case 4:
-                            cout<<imwrite("img4.png",frame)<<endl;
-                            break;
-                        case 5:
-                            cout<<imwrite("img5.png",frame)<<endl;
-                            break;
-                        case 6:
-                            cout<<imwrite("img6.png",frame)<<endl;
-                            break;
-                    }
-                    cout<<num<<" store the fig\n";
+                    string filename = "img" + to_string(num) + ".png";
+                    cout << imwrite(filename,frame) << endl;
+                    cout<< num <<" store the fig\n";
                     for (int i = 0; i < cells.size(); ++i) {
                         cout << i << " x = " << cells[i].x << " y = " << cells[i].y << endl;
                     }
+                    //color detection starts here
+                    vector<int> temp = printFaceColor(filename, cells);
+                    //temp[4] is the color of central
+                    cell_colors[temp[4]] = temp;
                     break;
                 }
                 //not correct, discard, re-scan
@@ -221,3 +295,4 @@ int main(int, char**)
     destroyAllWindows();
     return 0;
 }
+
